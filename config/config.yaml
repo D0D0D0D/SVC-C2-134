@@ -1,0 +1,56 @@
+# Runtime configuration — SVC-C2-134
+# Runtime-tunable parameters only (the static manifest lives in config/agent.yaml).
+# All values below are design-stage defaults; they are calibrated at onboarding
+# time per target organiser.
+
+# ── LLM (three-way reconciliation + applicability + sufficiency reasoning) ──────
+llm:
+  provider: "anthropic"          # shared.services.llm.{anthropic,openai,bedrock}_client
+  model: "claude-sonnet-5"
+  temperature: 0.0               # high-responsibility adjudication support — deterministic
+  max_tokens: 4000
+
+# ── Deterministic clause-requirement mapping (internal Tool) ───────────────────
+clause_match:
+  top_k: 8                       # candidate clauses surfaced per issue for LLM applicability
+  hybrid_search: true            # clause_ids / rule codes are code-like identifiers
+                                 # equal-score ties broken by ascending clause_id (reproducible)
+
+# ── Input quality gate (free-text reject thresholds; pre_process S-2) ──────────
+input_quality:
+  max_bad_char_ratio: 0.10       # control-char / U+FFFD ratio ceiling per free-text field
+  max_field_chars: 20000         # per free-text field length ceiling
+
+# ── Provenance / source-citation enforcement (S-3 Provenance) ──────────────────
+provenance:
+  min_quote_len: 12              # verbatim quote length floor — guards vacuous "" in source
+  require_citation_for_supports_contradicts: true  # supports/contradicts w/o citation → unknown
+
+# ── Output blocking (structural adjudication-boundary — human-only fields) ──────
+output_blocking:
+  # ADDITIVE ONLY. post_process holds a hardcoded non-removable floor of the same
+  # keys; this list is merged ONTO that floor. Removing an entry here has no effect
+  # (fail-closed — an operator cannot open the adjudication boundary via config).
+  prohibited_fields:
+    - "verdict"
+    - "ruling"
+    - "penalty"
+    - "sanction"
+    - "bracket_change"
+    - "eligibility"
+    - "disqualification"
+    - "winner"
+    - "loser"
+    - "points_adjustment"
+
+# ── Execution ──────────────────────────────────────────────────────────────────
+max_retry: 3
+timeout_s: 60
+budget_usd: 1.50                 # advisory soft ceiling per invocation
+memory_enabled: false            # no cross-invoke memory; no HITL checkpointer
+
+# ── HITL ────────────────────────────────────────────────────────────────────────
+hitl:
+  enabled: false                 # human review is downstream of invoke (referee reviews the
+                                 # returned analysis); no in-graph suspend/resume necessity.
+                                 # See docs/02_design.md DDR (A-3).

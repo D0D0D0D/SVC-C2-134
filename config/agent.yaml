@@ -1,0 +1,21 @@
+# Agent Manifest — AgentRegistry entry point
+# This file is required for AgentRegistry auto-discovery (lazy-load architecture).
+# Static manifest only — runtime-tunable parameters live in config/config.yaml.
+
+id: "SVC-C2-134"
+name: "Esports Tournament Dispute Adjudication Support Agent"
+namespace: "svc"
+version: "1.0.0"
+enabled: true
+category: "Cat 2"
+# generation_mode: src/services/llm_seam.py exposes a BaseLLM set_llm/get_llm injection seam.
+generation_mode: "llm"
+industry: "SVC"
+base_type: "AgentBaseGraph"
+class: "src.graph.graph.Graph"
+required_trust_level: "VERIFIED_EXTERNAL"
+
+# The injected BaseLLM owns its credentials; this template has no startup secret.
+requires:
+  secrets: []
+  extras: []
